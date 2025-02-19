@@ -27,6 +27,7 @@ def create_maps(input_dir, output_dir, config):
             and f["kspace"].shape[2] == config["height"]
             and f["kspace"].shape[3] == config["width"]
             and f.attrs["acquisition"] in config["label"]
+            and f["kspace"].shape[0] > config["slices_keep"]
         ):
             print("Preparing ", name)
 

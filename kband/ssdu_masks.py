@@ -52,12 +52,12 @@ class ssdu_masks:
 
         loss_mask = np.zeros_like(input_mask)
         count = 0
-        while count <= np.int(np.ceil(np.sum(input_mask[:]) * self.rho)):
+        while count <= int(np.ceil(np.sum(input_mask[:]) * self.rho)):
             # print(count)
-            indx = np.int(
+            indx = int(
                 np.round(np.random.normal(loc=center_kx, scale=(nrow - 1) / std_scale))
             )
-            indy = np.int(
+            indy = int(
                 np.round(np.random.normal(loc=center_ky, scale=(ncol - 1) / std_scale))
             )
 

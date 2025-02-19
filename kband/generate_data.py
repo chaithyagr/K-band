@@ -78,10 +78,6 @@ def create_input(input_dir, num_samples, config, data_type, is_test=False):
             h5_data.close()
 
             print(i + 1, "out of", num_samples, "samples done")
-        else:
-            imgs = h5_data["target"][:]
-            maps = h5_data["sensmaps"][:]
-            ksp = h5_data["kspace"][:]
 
     return imgs, maps, ksp
 
@@ -106,11 +102,11 @@ if __name__ == "__main__":
 
     # Knee and Brain data configs from FastMRI
     fastMRI_brain_config = {
-        "load_train": "/mikRAID/fredwang/full_brain_data/multicoil_train_processed",
-        "load_test": "/mikRAID/fredwang/full_brain_data/multicoil_test_processed",
-        "target": "/mikRAID/han2019/brain_data_paper",
-        "num_samples_train": 2000,
-        "num_samples_test": 400,
+        "load_train": "/volatile/KBAND_DATA/train",
+        "load_test": "/volatile/KBAND_DATA/test",
+        "target": "/volatile/KBAND_DATA/data",
+        "num_samples_train": 108,
+        "num_samples_test": 9,
         "height": 320,
         "width": 230,
         "coils": 16,

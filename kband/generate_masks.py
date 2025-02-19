@@ -103,10 +103,10 @@ if __name__ == "__main__":
         "calib": 20,
     }
     fastMRI_brain_config = {
-        "output": "/mikRAID/han2019/brain_data_paper/",
-        "n_t_data": 1600,
-        "n_v_data": 400,
-        "n_i_data": 400,
+        "output": "/volatile/KBAND_DATA/masks",
+        "n_t_data": 86,
+        "n_v_data": 22,
+        "n_i_data": 86,
         "R": 4,
         "R_band": 4,
         "H": 320,
