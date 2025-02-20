@@ -126,8 +126,7 @@ class Recon(pl.LightningModule):
         self.iter = 0
 
     def _init_hparams(self, hparams):
-        self.save_hyperparameters(hparams)
-
+        self.hparams = hparams
         if hparams.abs_loss:
             self.loss_fun = self._abs_loss_fun
         else:
