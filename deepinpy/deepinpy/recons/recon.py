@@ -59,7 +59,7 @@ def ifft2c(_tensor):
     return torch.fft.ifftshift(_tensor, dim=(-2, -1))
 
 
-def generate_W_mask(height=400, width=300, angles=tuple(range(180)), R_band=6.0):
+def generate_W_mask(height=320, width=230, angles=tuple(range(180)), R_band=6.0):
     """Generates a density compensation mask, assuming a uniform distribution over k-band angles provided.
     Method: 
         We initialize a zeros mask, then iterative over all possible bands and add ones in all the pixels that are included in the bands.

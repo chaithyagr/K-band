@@ -102,11 +102,11 @@ class MultiChannelMRIDataset(torch.utils.data.Dataset):
             loss_masks = loss_masks.squeeze(0)
 
         data = {
-                'imgs': imgs.astype(np.complex6464),
-                'maps': maps.astype(np.complex6464),
+                'imgs': imgs.astype(np.complex64),
+                'maps': maps.astype(np.complex64),
                 'masks': masks.astype(np.float32),
                 'loss_masks': loss_masks.astype(np.float32),
-                'out': out.astype(np.complex6464)
+                'out': out.astype(np.complex64)
                 }
 
         return idx, data
@@ -171,8 +171,8 @@ def load_data(idx, data_file, masks_file, gen_masks=False):
         maps = np.array(F['maps'][idx,...], dtype=np.complex64)
 
     with h5py.File(masks_file, 'r') as F:
-        masks = np.array(F['masks'][idx,...], dtype=np.float)
-        loss_masks = np.array(F['loss_masks'][idx, ...], dtype=np.float)
+        masks = np.array(F['masks'][idx,...], dtype=np.float32)
+        loss_masks = np.array(F['loss_masks'][idx, ...], dtype=np.float32)
         if 'noise' in F.keys():
             noise = np.array(F['noise'][idx,...], dtype=np.complex64)
         else:
@@ -192,10 +192,10 @@ def load_data_ksp(idx, data_file, masks_file, gen_masks=False):
         ksp = np.array(F['ksp'][idx,...], dtype=np.complex64)
 
     with h5py.File(masks_file, 'r') as F:
-        masks = np.array(F['masks'][idx,...], dtype=np.float)
-        loss_masks = np.array(F['loss_masks'][idx, ...], dtype=np.float)
+        masks = np.array(F['masks'][idx,...], dtype=np.float32)
+        loss_masks = np.array(F['loss_masks'][idx, ...], dtype=np.float32)
         if 'noise' in F.keys():
-            noise = np.array(F['noise'][idx,...], dtype=np.float)
+            noise = np.array(F['noise'][idx,...], dtype=np.float32)
         else:
             noise = None
 
@@ -211,8 +211,8 @@ def load_data_cached(data_file):
     with h5py.File(data_file, 'r') as F:
         imgs = np.array(F['imgs'], dtype=np.complex64)
         maps = np.array(F['maps'], dtype=np.complex64)
-        masks = np.array(F['masks'], dtype=np.float)
-        loss_masks = np.array(F['loss_masks'], dtype=np.float)
+        masks = np.array(F['masks'], dtype=np.float32)
+        loss_masks = np.array(F['loss_masks'], dtype=np.float32)
         out = np.array(F['out'], dtype=np.complex64)
     return imgs, maps, masks, out, loss_masks
 
