@@ -80,7 +80,7 @@ def main_train(args, gpu_ids=None):
         accelerator = None
     else:
         gpus = gpu_ids
-        accelerator = "ddp"
+        accelerator = None
     trainer = Trainer(
         max_epochs=args.num_epochs,
         gpus=gpus,

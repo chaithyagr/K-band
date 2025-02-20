@@ -102,11 +102,11 @@ class MultiChannelMRIDataset(torch.utils.data.Dataset):
             loss_masks = loss_masks.squeeze(0)
 
         data = {
-                'imgs': imgs.astype(np.complex64),
-                'maps': maps.astype(np.complex64),
+                'imgs': imgs.astype(np.complex6464),
+                'maps': maps.astype(np.complex6464),
                 'masks': masks.astype(np.float32),
                 'loss_masks': loss_masks.astype(np.float32),
-                'out': out.astype(np.complex64)
+                'out': out.astype(np.complex6464)
                 }
 
         return idx, data
@@ -167,14 +167,14 @@ class MultiChannelMRIDataset(torch.utils.data.Dataset):
 
 def load_data(idx, data_file, masks_file, gen_masks=False):
     with h5py.File(data_file, 'r') as F:
-        imgs = np.array(F['imgs'][idx,...], dtype=np.complex)
-        maps = np.array(F['maps'][idx,...], dtype=np.complex)
+        imgs = np.array(F['imgs'][idx,...], dtype=np.complex64)
+        maps = np.array(F['maps'][idx,...], dtype=np.complex64)
 
     with h5py.File(masks_file, 'r') as F:
         masks = np.array(F['masks'][idx,...], dtype=np.float)
         loss_masks = np.array(F['loss_masks'][idx, ...], dtype=np.float)
         if 'noise' in F.keys():
-            noise = np.array(F['noise'][idx,...], dtype=np.complex)
+            noise = np.array(F['noise'][idx,...], dtype=np.complex64)
         else:
             noise = None
             
@@ -187,9 +187,9 @@ def load_data(idx, data_file, masks_file, gen_masks=False):
 
 def load_data_ksp(idx, data_file, masks_file, gen_masks=False):
     with h5py.File(data_file, 'r') as F:
-        imgs = np.array(F['imgs'][idx,...], dtype=np.complex)
-        maps = np.array(F['maps'][idx,...], dtype=np.complex)
-        ksp = np.array(F['ksp'][idx,...], dtype=np.complex)
+        imgs = np.array(F['imgs'][idx,...], dtype=np.complex64)
+        maps = np.array(F['maps'][idx,...], dtype=np.complex64)
+        ksp = np.array(F['ksp'][idx,...], dtype=np.complex64)
 
     with h5py.File(masks_file, 'r') as F:
         masks = np.array(F['masks'][idx,...], dtype=np.float)
@@ -209,11 +209,11 @@ def load_data_ksp(idx, data_file, masks_file, gen_masks=False):
 
 def load_data_cached(data_file):
     with h5py.File(data_file, 'r') as F:
-        imgs = np.array(F['imgs'], dtype=np.complex)
-        maps = np.array(F['maps'], dtype=np.complex)
+        imgs = np.array(F['imgs'], dtype=np.complex64)
+        maps = np.array(F['maps'], dtype=np.complex64)
         masks = np.array(F['masks'], dtype=np.float)
         loss_masks = np.array(F['loss_masks'], dtype=np.float)
-        out = np.array(F['out'], dtype=np.complex)
+        out = np.array(F['out'], dtype=np.complex64)
     return imgs, maps, masks, out, loss_masks
 
 

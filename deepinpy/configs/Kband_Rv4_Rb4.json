@@ -20,7 +20,7 @@
 	"step": 0.0001,
 	"num_epochs": 10,
 	"lr_scheduler": [5, 0.1],
-	"gpu": "1",
+	"gpu": "0",
 	"num_accumulate": 1,
 	"R_band": 4
 }
