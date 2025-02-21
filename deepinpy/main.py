@@ -91,7 +91,7 @@ def main_train(args, gpu_ids=None):
         progress_bar_refresh_rate=1,
         gradient_clip_val=args.clip_grads,
     )
-    trainer.fit(M)
+    #trainer.fit(M)
 
     M.eval()
     with torch.no_grad():

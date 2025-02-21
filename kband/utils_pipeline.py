@@ -120,6 +120,13 @@ def vardens_mask(height=400, width=300, R=4, calib_size=20):
     ] = 1
     return vd_mask
 
+def sparks_traj(*args, **kwargs):
+    """Creates a sub-sampling pattern within the band from sparkling trajectory"""
+    from mrinufft.io.nsp import read_trajectory
+    traj, params = read_trajectory("/volatile/KBAND_DATA/traj/d2_ICar_Nc32_Ns512_N320.bin", dwell_time=0.01/2)
+    #grid_traj = ((traj+0.5)*np.asarray([height, width])).astype('int')
+    return traj
+
 
 def vardens_mask_1d(height=400, width=300, R=4, calib_size=20):
     """Creates a poisson disc mask of specified width, height, acceleration factor, and calibration area"""

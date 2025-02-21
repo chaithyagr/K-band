@@ -6,7 +6,7 @@ from optparse import OptionParser
 import h5py
 import numpy as np
 import ssdu_masks as ssdu_masks
-from utils_pipeline import band_mask, square_mask, vardens_mask, vardens_mask_1d
+from utils_pipeline import band_mask, square_mask, vardens_mask, vardens_mask_1d, sparks_traj
 
 
 def gen_masks(config, mask_type, undersample, one_dim=False):
@@ -32,16 +32,26 @@ def gen_masks(config, mask_type, undersample, one_dim=False):
     Returns:
         sampling_masks, loss_masks (2-dimensional ndarrays)"""
 
-    undersample_mask = undersample(
-        config["H"], config["W"], config["R"], config["calib"]
-    ).astype(np.float64)
+    if undersample == sparks_traj:
+        undersample_mask = undersample(
+            height=config["H"], width=config["W"]
+        ).astype(np.float64)
+    else:
+        undersample_mask = undersample(
+            height=config["H"], width=config["W"], R=config["R"], calib_size=config["calib"]
+        ).astype(np.float64)
     if mask_type == "supervised":
         sampling_mask = undersample_mask
         loss_mask = np.ones((config["H"], config["W"]))
     elif mask_type == "kband":
         blade_angle = np.random.randint(0, 180)
         loss_mask = band_mask(config["H"], config["W"], blade_angle, config["R_band"])
-        sampling_mask = undersample_mask * loss_mask
+        if undersample == sparks_traj:
+            gridded_traj = ((undersample_mask+0.5)*np.asarray([config["H"], config["W"]])).astype('int')
+            traj_mask = loss_mask[tuple(gridded_traj.reshape(-1, 2).T)]
+            sampling_mask = undersample_mask.reshape(-1, 2)[traj_mask > 0.1]
+        else:
+            sampling_mask = undersample_mask * loss_mask
     elif mask_type == "SSDU":
         if one_dim:
             sampling_mask, loss_mask = ssdu_masker.Gaussian_selection(
@@ -111,8 +121,8 @@ if __name__ == "__main__":
         "R_band": 4,
         "H": 320,
         "W": 230,
-        "inference_H": 640,
-        "inference_W": 320,
+        "inference_H": 320,
+        "inference_W": 230,
         "calib": 21,
     }
     # Empty template.
@@ -143,18 +153,24 @@ if __name__ == "__main__":
 
     if args.undersampling == "2d":
         undersample = vardens_mask
+    elif args.undersampling == "sparks":
+        undersample = sparks_traj
     elif args.undersampling == "1d":
         undersample = vardens_mask_1d
     elif args.undersampling == "radial":
         raise Exception("Not implemented yet.")
 
-    # Training masks.
-    train_sampling_masks = np.zeros(
-        (config["n_t_data"], config["H"], config["W"]), dtype=np.float64
-    )
     train_loss_masks = np.zeros(
         (config["n_t_data"], config["H"], config["W"]), dtype=np.float64
     )
+    # Training masks.
+    if args.undersampling != "sparks":
+        train_sampling_masks = np.zeros(
+            (config["n_t_data"], config["H"], config["W"]), dtype=np.float64
+        )
+    else:
+        train_sampling_masks = [[],] * config["n_t_data"]
+        
     ssdu_masker = ssdu_masks.ssdu_masks()
 
     for i in range(config["n_t_data"]):
@@ -174,14 +190,21 @@ if __name__ == "__main__":
         ),
         "w",
     )
-    f.create_dataset("masks", data=abs(train_sampling_masks), dtype=np.float64)
+    if args.undersampling != "sparks":
+        f.create_dataset("masks", data=abs(train_sampling_masks), dtype=np.float64)
+    else:
+        for i in range(config["n_t_data"]):
+            f.create_dataset("mask_traj_{:d}".format(i), data=abs(train_sampling_masks[i]), dtype=np.float32)
     f.create_dataset("loss_masks", data=abs(train_loss_masks), dtype=np.float64)
     f.close()
 
     # Validation masks.
-    val_sampling_masks = np.zeros(
-        (config["n_v_data"], config["H"], config["W"]), dtype=np.float64
-    )
+    if args.undersampling != "sparks":
+        val_sampling_masks = np.zeros(
+            (config["n_v_data"], config["H"], config["W"]), dtype=np.float64
+        )
+    else:
+        val_sampling_masks = [[],] * config["n_v_data"]
     val_loss_masks = np.zeros(
         (config["n_v_data"], config["H"], config["W"]), dtype=np.float64
     )
@@ -203,15 +226,22 @@ if __name__ == "__main__":
         ),
         "w",
     )
-    f.create_dataset("masks", data=abs(val_sampling_masks), dtype=np.float64)
+    if args.undersampling != "sparks":
+        f.create_dataset("masks", data=abs(val_sampling_masks), dtype=np.float64)
+    else:
+        for i in range(config["n_v_data"]):
+            f.create_dataset("mask_traj_{:d}".format(i), data=abs(val_sampling_masks[i]), dtype=np.float32)
     f.create_dataset("loss_masks", data=abs(val_loss_masks), dtype=np.float64)
     f.close()
 
     # Inference masks.
-    test_sampling_masks = np.zeros(
-        (config["n_i_data"], config["inference_H"], config["inference_W"]),
-        dtype=np.float64,
-    )
+    if args.undersampling != "sparks":
+        test_sampling_masks = np.zeros(
+            (config["n_i_data"], config["inference_H"], config["inference_W"]),
+            dtype=np.float64,
+        )
+    else:
+        test_sampling_masks = [[],] * config["n_i_data"]
     test_loss_masks = np.zeros(
         (config["n_i_data"], config["inference_H"], config["inference_W"]),
         dtype=np.float64,
@@ -230,6 +260,10 @@ if __name__ == "__main__":
         ),
         "w",
     )
-    f.create_dataset("masks", data=abs(test_sampling_masks), dtype=np.float64)
+    if args.undersampling != "sparks":
+        f.create_dataset("masks", data=abs(test_sampling_masks), dtype=np.float64)
+    else:
+        for i in range(config["n_i_data"]):
+            f.create_dataset("mask_traj_{:d}".format(i), data=abs(test_sampling_masks[i]), dtype=np.float32)
     f.create_dataset("loss_masks", data=abs(test_loss_masks), dtype=np.float64)
     f.close()
