@@ -194,7 +194,7 @@ if __name__ == "__main__":
         f.create_dataset("masks", data=abs(train_sampling_masks), dtype=np.float64)
     else:
         for i in range(config["n_t_data"]):
-            f.create_dataset("mask_traj_{:d}".format(i), data=abs(train_sampling_masks[i]), dtype=np.float32)
+            f.create_dataset("mask_traj_{:d}".format(i), data=train_sampling_masks[i], dtype=np.float32)
     f.create_dataset("loss_masks", data=abs(train_loss_masks), dtype=np.float64)
     f.close()
 
@@ -230,7 +230,7 @@ if __name__ == "__main__":
         f.create_dataset("masks", data=abs(val_sampling_masks), dtype=np.float64)
     else:
         for i in range(config["n_v_data"]):
-            f.create_dataset("mask_traj_{:d}".format(i), data=abs(val_sampling_masks[i]), dtype=np.float32)
+            f.create_dataset("mask_traj_{:d}".format(i), data=val_sampling_masks[i], dtype=np.float32)
     f.create_dataset("loss_masks", data=abs(val_loss_masks), dtype=np.float64)
     f.close()
 
@@ -264,6 +264,6 @@ if __name__ == "__main__":
         f.create_dataset("masks", data=abs(test_sampling_masks), dtype=np.float64)
     else:
         for i in range(config["n_i_data"]):
-            f.create_dataset("mask_traj_{:d}".format(i), data=abs(test_sampling_masks[i]), dtype=np.float32)
+            f.create_dataset("mask_traj_{:d}".format(i), data=test_sampling_masks[i], dtype=np.float32)
     f.create_dataset("loss_masks", data=abs(test_loss_masks), dtype=np.float64)
     f.close()

@@ -138,30 +138,28 @@ class MultiChannelMRIDataset(torch.utils.data.Dataset):
         return imgs, maps, masks, out, loss_masks
 
     def _sim_data(self, imgs, maps, masks, noise, ksp=None):
-
-        # N, nc, nx, ny
-        if noise is None:
-            if self.noncart:
-                assert ksp is not None, 'FIXME: NUFFT forward sim'
-                noise = np.random.randn(*ksp.shape) + 1j * np.random.randn(*ksp.shape)
-            else:
+        if self.noncart:
+            from mrinufft import get_operator
+            fourier_op = get_operator("gpunufft")(masks[0], maps.shape[-2:], n_coils=maps.shape[1])
+            per_ch_img = ifft2uc(ksp)
+            out = fourier_op.op(per_ch_img)
+            if out.ndim == 2:
+                out = out[None]
+            if noise is None:
+                noise = np.random.randn(*out.shape) + 1j * np.random.randn(*out.shape)
+        else:
+            # N, nc, nx, ny
+            if noise is None:
                 noise = np.random.randn(*maps.shape) + 1j * np.random.randn(*maps.shape)
 
-        if self.inverse_crime and ksp is None:
-            out = masks[:,None,:,:] * (fft2uc(imgs[:,None,:,:] * maps) + 1 / np.sqrt(2) * self.stdev * noise)
-        else:
-            if self.noncart:
-                out = ksp + 1 / np.sqrt(2) * self.stdev * noise
+            if self.inverse_crime and ksp is None:
+                out = masks[:,None,:,:] * (fft2uc(imgs[:,None,:,:] * maps) + 1 / np.sqrt(2) * self.stdev * noise)
             else:
-                out = masks[None,...] * (ksp + 1 / np.sqrt(2) * self.stdev * noise)
-            
-        if self.adjoint_data:
-            assert not self.noncart, 'FIXME: support NUFFT sim'
-            out = np.sum(np.conj(maps) * ifft2uc(out), axis=1)
-        else:
-            if not self.noncart:
-                out = fftmod(out)
-
+                if self.noncart:
+                    out = out + 1 / np.sqrt(2) * self.stdev * noise
+                else:
+                    out = masks[None,...] * (ksp + 1 / np.sqrt(2) * self.stdev * noise)
+            out = fftmod(out)
         return out
 
 
@@ -192,7 +190,10 @@ def load_data_ksp(idx, data_file, masks_file, gen_masks=False):
         ksp = np.array(F['ksp'][idx,...], dtype=np.complex64)
 
     with h5py.File(masks_file, 'r') as F:
-        masks = np.array(F['masks'][idx,...], dtype=np.float32)
+        if 'masks' in F.keys():
+            masks = np.array(F['masks'][idx,...], dtype=np.float32)
+        else:
+            masks = np.array(F['mask_traj_{}'.format(idx)], dtype=np.float32)
         loss_masks = np.array(F['loss_masks'][idx, ...], dtype=np.float32)
         if 'noise' in F.keys():
             noise = np.array(F['noise'][idx,...], dtype=np.float32)
