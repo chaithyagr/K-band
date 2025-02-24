@@ -40,44 +40,40 @@ def create_input(input_dir, num_samples, config, data_type, is_test=False):
         dtype=np.complex64,
     )
 
-    if not is_test:
-        # Create vardens/k-band masks and convert data into deepinpy format.
-        for i in range(num_samples):
-            # Load images, k-space and sensitivity maps from fastMRI data.
-            print("Preparing", data_files[i])
-            h5_data = h5py.File(os.path.join(input_dir, data_files[i]), "r")
-            n_coils = h5_data["kspace"].shape[0]
-            orig_H = h5_data["kspace"].shape[1]
-            orig_W = h5_data["kspace"].shape[2]
-            mid_H = orig_H // 2
-            mid_W = orig_W // 2
-
-            if data_type == "brain":
-                mid_W -= 5
-
-            # Crop if height and width specified in config is less than the height and width of loaded data.
-            imgs[i] = h5_data["target"][:][
-                mid_H - (config["height"] // 2) : mid_H + (config["height"] // 2),
-                mid_W - (config["width"] // 2) : mid_W + (config["width"] // 2),
-            ]
-            maps[i] = h5_data["sensmaps"][:][
-                :,
-                mid_H - (config["height"] // 2) : mid_H + (config["height"] // 2),
-                mid_W - (config["width"] // 2) : mid_W + (config["width"] // 2),
-            ]
-            # Because the cropping is applied in the image domain, we need to re-compute the k-space of the cropped images
-            for coil in range(n_coils):
-                ksp[i][coil] = fft2c(
-                    ifft2c(h5_data["kspace"][coil])[
-                        mid_H
-                        - (config["height"] // 2) : mid_H
-                        + (config["height"] // 2),
-                        mid_W - (config["width"] // 2) : mid_W + (config["width"] // 2),
-                    ]
-                )
-            h5_data.close()
-
-            print(i + 1, "out of", num_samples, "samples done")
+    # Create vardens/k-band masks and convert data into deepinpy format.
+    for i in range(num_samples):
+        # Load images, k-space and sensitivity maps from fastMRI data.
+        print("Preparing", data_files[i])
+        h5_data = h5py.File(os.path.join(input_dir, data_files[i]), "r")
+        n_coils = h5_data["kspace"].shape[0]
+        orig_H = h5_data["kspace"].shape[1]
+        orig_W = h5_data["kspace"].shape[2]
+        mid_H = orig_H // 2
+        mid_W = orig_W // 2
+        if data_type == "brain":
+            mid_W -= 5
+        # Crop if height and width specified in config is less than the height and width of loaded data.
+        imgs[i] = h5_data["target"][:][
+            mid_H - (config["height"] // 2) : mid_H + (config["height"] // 2),
+            mid_W - (config["width"] // 2) : mid_W + (config["width"] // 2),
+        ]
+        maps[i] = h5_data["sensmaps"][:][
+            :,
+            mid_H - (config["height"] // 2) : mid_H + (config["height"] // 2),
+            mid_W - (config["width"] // 2) : mid_W + (config["width"] // 2),
+        ]
+        # Because the cropping is applied in the image domain, we need to re-compute the k-space of the cropped images
+        for coil in range(n_coils):
+            ksp[i][coil] = fft2c(
+                ifft2c(h5_data["kspace"][coil])[
+                    mid_H
+                    - (config["height"] // 2) : mid_H
+                    + (config["height"] // 2),
+                    mid_W - (config["width"] // 2) : mid_W + (config["width"] // 2),
+                ]
+            )
+        h5_data.close()
+        print(i + 1, "out of", num_samples, "samples done")
 
     return imgs, maps, ksp
 
