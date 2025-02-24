@@ -141,10 +141,14 @@ class MultiChannelMRI(torch.nn.Module):
             return out
 
     def _forward(self, x):
-        return self.fourier_op.op(x)
+        if self.noncart:
+            return self.fourier_op.op(x)
+        return sense_forw(x, self.maps, self.mask, ndim=self.num_spatial_dims)
 
     def _adjoint(self, y):
-        return self.fourier_op.adj_op(y)[0]
+        if self.noncart:
+            return self.fourier_op.adj_op(y)[0]
+        return sense_adj(y, self.maps, self.mask, ndim=self.num_spatial_dims)
 
     def forward(self, x):
         return self._forward(x)

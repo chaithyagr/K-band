@@ -159,7 +159,10 @@ class MultiChannelMRIDataset(torch.utils.data.Dataset):
                     out = out + 1 / np.sqrt(2) * self.stdev * noise
                 else:
                     out = masks[None,...] * (ksp + 1 / np.sqrt(2) * self.stdev * noise)
+        if not self.adjoint_data and not self.noncart:
             out = fftmod(out)
+        elif self.adjoint_data and not self.noncart:
+            out = np.sum(np.conj(maps) * ifft2uc(out), axis=1)
         return out
 
 
