@@ -103,10 +103,10 @@ class MyModelCheckpoint(Callback):
         self.save_function = None
 
         mode_dict = {
-            'min': (np.less, np.Inf, 'min'),
-            'max': (np.greater, -np.Inf, 'max'),
-            'auto': (np.greater, -np.Inf, 'max') if 'acc' in self.monitor or self.monitor.startswith('fmeasure')
-            else (np.less, np.Inf, 'min'),
+            'min': (np.less, np.inf, 'min'),
+            'max': (np.greater, -np.inf, 'max'),
+            'auto': (np.greater, -np.inf, 'max') if 'acc' in self.monitor or self.monitor.startswith('fmeasure')
+            else (np.less, np.inf, 'min'),
         }
 
         if mode not in mode_dict:
