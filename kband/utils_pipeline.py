@@ -125,7 +125,7 @@ def sparks_traj(*args, **kwargs):
     from mrinufft.io.nsp import read_trajectory
     traj, params = read_trajectory("/volatile/KBAND_DATA/traj/d2_ICar_Nc32_Ns512_N320.bin", dwell_time=0.01/2)
     #grid_traj = ((traj+0.5)*np.asarray([height, width])).astype('int')
-    return traj
+    return traj.reshape(-1, traj.shape[-1])
 
 
 def vardens_mask_1d(height=400, width=300, R=4, calib_size=20):
